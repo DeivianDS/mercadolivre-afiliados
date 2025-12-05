@@ -139,3 +139,4 @@ A mensagem copiada inclui a URL da imagem do produto para facilitar o envio no W
 ---
 
 Feito com 💜 para afiliados do Mercado Livre
+# mercadolivre-afiliados
