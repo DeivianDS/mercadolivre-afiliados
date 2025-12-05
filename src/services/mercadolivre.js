@@ -59,11 +59,11 @@ export async function searchProducts(query, options = {}) {
         if (!response.ok) {
             const errorText = await response.text();
             console.error('❌ Erro na API:', response.status, errorText);
-            
+
             if (response.status === 403 || response.status === 0) {
                 throw new Error('CORS_ERROR');
             }
-            
+
             throw new Error(`Erro ${response.status}: ${errorText}`);
         }
 
@@ -86,7 +86,7 @@ export async function searchProducts(query, options = {}) {
             shipping: {
                 freeShipping: product.shipping?.free_shipping || false,
             },
-            discount: product.original_price ? 
+            discount: product.original_price ?
                 Math.round(((product.original_price - product.price) / product.original_price) * 100) : 0
         }));
     } catch (error) {
@@ -116,7 +116,7 @@ export async function searchProducts(query, options = {}) {
 ║                                                                ║
 ╚════════════════════════════════════════════════════════════════╝
             `);
-            
+
             throw new Error('A API do Mercado Livre bloqueou a requisição (CORS). Veja o console para soluções.');
         }
 
@@ -169,7 +169,7 @@ export async function getDeals(category = null, limit = 50) {
             shipping: {
                 freeShipping: product.shipping?.free_shipping || false,
             },
-            discount: product.original_price ? 
+            discount: product.original_price ?
                 Math.round(((product.original_price - product.price) / product.original_price) * 100) : 0
         }));
     } catch (error) {
@@ -179,9 +179,13 @@ export async function getDeals(category = null, limit = 50) {
 }
 
 /**
- * Generate affiliate link by adding tag to product URL
+ * Generate affiliate link by adding affiliate parameters to product URL
+ * Supports two formats:
+ * 1. Simple tag format: ?tag=YOURTAG
+ * 2. Matt tool format: ?matt_word=USERNAME&matt_tool=ID
+ * 
  * @param {string} productUrl - Original product URL
- * @param {string} affiliateTag - Affiliate tag
+ * @param {string} affiliateTag - Affiliate tag (can be "tag:VALUE" or "matt:USERNAME:TOOLID")
  * @returns {string} Affiliate link
  */
 export function generateAffiliateLink(productUrl, affiliateTag) {
@@ -191,7 +195,22 @@ export function generateAffiliateLink(productUrl, affiliateTag) {
 
     try {
         const url = new URL(productUrl);
-        url.searchParams.set('tag', affiliateTag);
+
+        // Check if using matt_word/matt_tool format
+        // Format: "matt:pamelabenachio:78793736"
+        if (affiliateTag.startsWith('matt:')) {
+            const parts = affiliateTag.split(':');
+            if (parts.length >= 3) {
+                const mattWord = parts[1];
+                const mattTool = parts[2];
+                url.searchParams.set('matt_word', mattWord);
+                url.searchParams.set('matt_tool', mattTool);
+            }
+        } else {
+            // Simple tag format
+            url.searchParams.set('tag', affiliateTag);
+        }
+
         return url.toString();
     } catch (error) {
         console.error('Error generating affiliate link:', error);

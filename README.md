@@ -24,12 +24,31 @@ Copie o arquivo `.env.example` para `.env`:
 cp .env.example .env
 ```
 
-Edite o arquivo `.env` e adicione sua tag de afiliado:
+Edite o arquivo `.env` e adicione sua tag de afiliado.
+
+**A aplicação suporta dois formatos:**
+
+**Formato 1 - Tag Simples:**
 ```
-VITE_ML_AFFILIATE_TAG=sua_tag_aqui
+VITE_ML_AFFILIATE_TAG=SEUNOME-20
 ```
 
-> **Onde encontrar sua tag?** Acesse o [programa de afiliados do Mercado Livre](https://afiliados.mercadolivre.com.br/)
+**Formato 2 - Matt Tool (recomendado):**
+```
+VITE_ML_AFFILIATE_TAG=matt:USERNAME:TOOLID
+```
+
+Exemplo com matt tool:
+```
+VITE_ML_AFFILIATE_TAG=matt:pamelabenachio:78793736
+```
+
+> **Como encontrar seus dados de afiliado?**
+> 1. Acesse o [programa de afiliados do Mercado Livre](https://afiliados.mercadolivre.com.br/)
+> 2. Faça login com sua conta de afiliado
+> 3. Gere um link de afiliado para qualquer produto
+> 4. Se o link contiver `matt_word` e `matt_tool`, use o formato 2
+> 5. Se o link contiver apenas `tag`, use o formato 1
 
 ### 3. Execute o projeto:
 ```bash
