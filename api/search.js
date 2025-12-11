@@ -15,15 +15,15 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { query, limit = 50, sort, shipping, condition, DEAL } = req.query;
+        const { q, limit = 50, sort, shipping, condition, DEAL } = req.query;
 
-        if (!query) {
+        if (!q) {
             return res.status(400).json({ error: 'Query parameter is required' });
         }
 
         // Construir URL da API do Mercado Livre
         const params = new URLSearchParams({
-            q: query,
+            q: q,
             limit: limit.toString()
         });
 
