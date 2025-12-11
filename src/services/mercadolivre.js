@@ -52,7 +52,7 @@ export async function searchProducts(query, options = {}) {
             params.append('DEAL', 'true');
         }
 
-        const url = `${ML_API_BASE}/sites/MLB/search?${params.toString()}`;
+        const url = `${ML_API_BASE}/search?${params.toString()}`;
         console.log('🔍 Buscando produtos:', url);
 
         const response = await fetch(url);
@@ -143,7 +143,7 @@ export async function getDeals(category = null, limit = 50) {
             params.append('category', category);
         }
 
-        const url = `${ML_API_BASE}/sites/MLB/search?${params.toString()}`;
+        const url = `${ML_API_BASE}/search?${params.toString()}`;
         const response = await fetch(url);
 
         if (!response.ok) {
