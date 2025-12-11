@@ -52,8 +52,8 @@ export async function searchProducts(query, options = {}) {
         }
 
         const targetUrl = `${ML_API_BASE}/sites/MLB/search?${params.toString()}`;
-        // Use allorigins.win as alternative proxy
-        const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}&timestamp=${Date.now()}`;
+        // Use thingproxy as alternative
+        const url = `https://thingproxy.freeboard.io/fetch/${encodeURIComponent(targetUrl)}`;
 
         console.log('🔍 Buscando produtos:', url);
 
@@ -71,7 +71,13 @@ export async function searchProducts(query, options = {}) {
         }
 
         const data = await response.json();
-        console.log(`✅ Encontrados ${data.results?.length || 0} produtos`);
+        console.log('📦 Dados recebidos:', data);
+
+        if (!data.results) {
+            throw new Error(data.message || data.error || 'Formato de resposta inválido');
+        }
+
+        console.log(`✅ Encontrados ${data.results.length} produtos`);
 
         // Transform the response to a simpler format
         return data.results.map(product => ({
@@ -146,7 +152,7 @@ export async function getDeals(category = null, limit = 50) {
         }
 
         const targetUrl = `${ML_API_BASE}/sites/MLB/search?${params.toString()}`;
-        const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}&timestamp=${Date.now()}`;
+        const url = `https://thingproxy.freeboard.io/fetch/${encodeURIComponent(targetUrl)}`;
         const response = await fetch(url);
 
         if (!response.ok) {
@@ -157,6 +163,10 @@ export async function getDeals(category = null, limit = 50) {
         }
 
         const data = await response.json();
+
+        if (!data.results) {
+            return []; // Return empty array if no results or error
+        }
 
         return data.results.map(product => ({
             id: product.id,
