@@ -1,7 +1,6 @@
 // Mercado Livre API Service
-// Use serverless function in production to avoid CORS issues
-const ML_API_BASE = import.meta.env.DEV ? '/api' : '/api';
-
+// Use CORS proxy in production to avoid CORS issues and Vercel IP blocks
+const ML_API_BASE = 'https://api.mercadolibre.com';
 
 /**
  * Search products on Mercado Livre with filters
@@ -52,7 +51,10 @@ export async function searchProducts(query, options = {}) {
             params.append('DEAL', 'true');
         }
 
-        const url = `${ML_API_BASE}/search?${params.toString()}`;
+        const targetUrl = `${ML_API_BASE}/sites/MLB/search?${params.toString()}`;
+        // Use corsproxy.io in production/dev to handle CORS
+        const url = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+
         console.log('🔍 Buscando produtos:', url);
 
         const response = await fetch(url);
@@ -143,7 +145,8 @@ export async function getDeals(category = null, limit = 50) {
             params.append('category', category);
         }
 
-        const url = `${ML_API_BASE}/search?${params.toString()}`;
+        const targetUrl = `${ML_API_BASE}/sites/MLB/search?${params.toString()}`;
+        const url = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
         const response = await fetch(url);
 
         if (!response.ok) {
