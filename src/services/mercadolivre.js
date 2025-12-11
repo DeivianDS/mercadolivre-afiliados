@@ -52,8 +52,8 @@ export async function searchProducts(query, options = {}) {
         }
 
         const targetUrl = `${ML_API_BASE}/sites/MLB/search?${params.toString()}`;
-        // Use corsproxy.io in production/dev to handle CORS
-        const url = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+        // Use allorigins.win as alternative proxy
+        const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}&timestamp=${Date.now()}`;
 
         console.log('🔍 Buscando produtos:', url);
 
@@ -146,7 +146,7 @@ export async function getDeals(category = null, limit = 50) {
         }
 
         const targetUrl = `${ML_API_BASE}/sites/MLB/search?${params.toString()}`;
-        const url = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+        const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}&timestamp=${Date.now()}`;
         const response = await fetch(url);
 
         if (!response.ok) {
