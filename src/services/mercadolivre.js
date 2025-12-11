@@ -1,6 +1,7 @@
 // Mercado Livre API Service
-// Use proxy in development to avoid CORS issues
-const ML_API_BASE = import.meta.env.DEV ? '/api' : 'https://api.mercadolibre.com';
+// Use serverless function in production to avoid CORS issues
+const ML_API_BASE = import.meta.env.DEV ? '/api' : '/api';
+
 
 /**
  * Search products on Mercado Livre with filters
