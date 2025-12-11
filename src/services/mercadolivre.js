@@ -52,8 +52,8 @@ export async function searchProducts(query, options = {}) {
         }
 
         const targetUrl = `${ML_API_BASE}/sites/MLB/search?${params.toString()}`;
-        // Use thingproxy as alternative
-        const url = `https://thingproxy.freeboard.io/fetch/${encodeURIComponent(targetUrl)}`;
+        // Use CodeTabs as alternative proxy
+        const url = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
 
         console.log('🔍 Buscando produtos:', url);
 
@@ -74,7 +74,11 @@ export async function searchProducts(query, options = {}) {
         console.log('📦 Dados recebidos:', data);
 
         if (!data.results) {
-            throw new Error(data.message || data.error || 'Formato de resposta inválido');
+            // Check if it's an error response from ML passed through
+            if (data.error) {
+                throw new Error(`ML API Error: ${data.message || data.error}`);
+            }
+            return [];
         }
 
         console.log(`✅ Encontrados ${data.results.length} produtos`);
@@ -152,7 +156,8 @@ export async function getDeals(category = null, limit = 50) {
         }
 
         const targetUrl = `${ML_API_BASE}/sites/MLB/search?${params.toString()}`;
-        const url = `https://thingproxy.freeboard.io/fetch/${encodeURIComponent(targetUrl)}`;
+        // Use CodeTabs as alternative proxy
+        const url = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
         const response = await fetch(url);
 
         if (!response.ok) {
@@ -165,6 +170,9 @@ export async function getDeals(category = null, limit = 50) {
         const data = await response.json();
 
         if (!data.results) {
+            if (data.error) {
+                throw new Error(`ML API Error: ${data.message || data.error}`);
+            }
             return []; // Return empty array if no results or error
         }
 
