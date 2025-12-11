@@ -45,37 +45,33 @@ export async function searchProducts(query, options = {}) {
         if (condition) {
             params.append('condition', condition);
         }
-
         // Add discount filter (using DEAL attribute)
         if (discount) {
             params.append('DEAL', 'true');
         }
 
-        const targetUrl = `${ML_API_BASE}/sites/MLB/search?${params.toString()}`;
-        // Use AllOrigins /get endpoint which wraps the response
-        const url = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+        // Use our own authenticated serverless function
+        const targetUrl = `/api/authenticated-search?${params.toString()}`;
 
-        console.log('🔍 Buscando produtos:', url);
+        console.log('🔍 Buscando produtos (via backend):', targetUrl);
 
-        const response = await fetch(url);
+        const response = await fetch(targetUrl);
 
         if (!response.ok) {
-            throw new Error(`Erro no proxy: ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            console.error('❌ Erro na API:', response.status, errorData);
+
+            if (errorData.error === 'Configuration Error') {
+                throw new Error('CONFIG_ERROR');
+            }
+
+            throw new Error(`Erro ${response.status}: ${errorData.message || 'Falha na busca'}`);
         }
 
-        const proxyData = await response.json();
-
-        if (!proxyData.contents) {
-            throw new Error('Proxy não retornou conteúdo');
-        }
-
-        const data = JSON.parse(proxyData.contents);
+        const data = await response.json();
         console.log('📦 Dados recebidos:', data);
 
         if (!data.results) {
-            if (data.error) {
-                throw new Error(`ML API Error: ${data.message || data.error}`);
-            }
             return [];
         }
 
@@ -103,32 +99,18 @@ export async function searchProducts(query, options = {}) {
     } catch (error) {
         console.error('❌ Error searching products:', error);
 
-        // Provide helpful error messages for CORS issues
-        if (error.message === 'CORS_ERROR' || error.message.includes('CORS')) {
+        if (error.message === 'CONFIG_ERROR') {
             console.error(`
 ╔════════════════════════════════════════════════════════════════╗
-║  ⚠️  ERRO DE CORS - API do Mercado Livre Bloqueada            ║
+║  ⚠️  ERRO DE CONFIGURAÇÃO - Credenciais Ausentes              ║
 ╠════════════════════════════════════════════════════════════════╣
 ║                                                                ║
-║  A API do Mercado Livre bloqueia requisições de localhost.    ║
-║                                                                ║
-║  SOLUÇÕES:                                                     ║
-║                                                                ║
-║  1. 🚀 DEPLOY EM PRODUÇÃO (Recomendado)                       ║
-║     • Vercel: vercel --prod                                   ║
-║     • Netlify: netlify deploy --prod --dir=dist               ║
-║                                                                ║
-║  2. 🔧 EXTENSÃO DE NAVEGADOR (Temporário)                     ║
-║     • Chrome: "CORS Unblock" ou "Allow CORS"                  ║
-║     • Firefox: "CORS Everywhere"                              ║
-║                                                                ║
-║  3. 🌐 USAR NGROK/LOCALTUNNEL                                 ║
-║     • Expor localhost com URL pública                         ║
+║  As credenciais da API do Mercado Livre não foram configuradas.║
+║  Por favor, configure ML_APP_ID e ML_CLIENT_SECRET na Vercel.  ║
 ║                                                                ║
 ╚════════════════════════════════════════════════════════════════╝
             `);
-
-            throw new Error('A API do Mercado Livre bloqueou a requisição (CORS). Veja o console para soluções.');
+            throw new Error('Credenciais da API não configuradas. Verifique o console.');
         }
 
         throw error;
@@ -153,27 +135,17 @@ export async function getDeals(category = null, limit = 50) {
             params.append('category', category);
         }
 
-        const targetUrl = `${ML_API_BASE}/sites/MLB/search?${params.toString()}`;
-        // Use AllOrigins /get endpoint which wraps the response
-        const url = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
-        const response = await fetch(url);
+        // Use our own authenticated serverless function
+        const targetUrl = `/api/authenticated-search?${params.toString()}`;
+        const response = await fetch(targetUrl);
 
         if (!response.ok) {
-            throw new Error(`Erro no proxy: ${response.status}`);
+            throw new Error('Erro ao buscar ofertas');
         }
 
-        const proxyData = await response.json();
-
-        if (!proxyData.contents) {
-            throw new Error('Proxy não retornou conteúdo');
-        }
-
-        const data = JSON.parse(proxyData.contents);
+        const data = await response.json();
 
         if (!data.results) {
-            if (data.error) {
-                throw new Error(`ML API Error: ${data.message || data.error}`);
-            }
             return []; // Return empty array if no results or error
         }
 
