@@ -46,41 +46,6 @@ export async function searchProducts(query, options = {}) {
             params.append('condition', condition);
         }
 
-        // Add discount filter (using DEAL attribute)
-        if (discount) {
-            params.append('DEAL', 'true');
-        }
-
-        const targetUrl = `${ML_API_BASE}/sites/MLB/search?${params.toString()}`;
-        // Use CodeTabs as alternative proxy
-        const url = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
-
-        console.log('🔍 Buscando produtos:', url);
-
-        const response = await fetch(url);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('❌ Erro na API:', response.status, errorText);
-
-            if (response.status === 403 || response.status === 0) {
-                throw new Error('CORS_ERROR');
-            }
-
-            throw new Error(`Erro ${response.status}: ${errorText}`);
-        }
-
-        const data = await response.json();
-        console.log('📦 Dados recebidos:', data);
-
-        if (!data.results) {
-            // Check if it's an error response from ML passed through
-            if (data.error) {
-                throw new Error(`ML API Error: ${data.message || data.error}`);
-            }
-            return [];
-        }
-
         console.log(`✅ Encontrados ${data.results.length} produtos`);
 
         // Transform the response to a simpler format
@@ -156,18 +121,21 @@ export async function getDeals(category = null, limit = 50) {
         }
 
         const targetUrl = `${ML_API_BASE}/sites/MLB/search?${params.toString()}`;
-        // Use CodeTabs as alternative proxy
-        const url = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
+        // Use AllOrigins /get endpoint which wraps the response
+        const url = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
         const response = await fetch(url);
 
         if (!response.ok) {
-            if (response.status === 403) {
-                throw new Error('CORS_ERROR');
-            }
-            throw new Error('Erro ao buscar ofertas');
+            throw new Error(`Erro no proxy: ${response.status}`);
         }
 
-        const data = await response.json();
+        const proxyData = await response.json();
+
+        if (!proxyData.contents) {
+            throw new Error('Proxy não retornou conteúdo');
+        }
+
+        const data = JSON.parse(proxyData.contents);
 
         if (!data.results) {
             if (data.error) {
