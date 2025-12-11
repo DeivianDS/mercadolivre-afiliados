@@ -46,6 +46,39 @@ export async function searchProducts(query, options = {}) {
             params.append('condition', condition);
         }
 
+        // Add discount filter (using DEAL attribute)
+        if (discount) {
+            params.append('DEAL', 'true');
+        }
+
+        const targetUrl = `${ML_API_BASE}/sites/MLB/search?${params.toString()}`;
+        // Use AllOrigins /get endpoint which wraps the response
+        const url = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+
+        console.log('🔍 Buscando produtos:', url);
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error(`Erro no proxy: ${response.status}`);
+        }
+
+        const proxyData = await response.json();
+
+        if (!proxyData.contents) {
+            throw new Error('Proxy não retornou conteúdo');
+        }
+
+        const data = JSON.parse(proxyData.contents);
+        console.log('📦 Dados recebidos:', data);
+
+        if (!data.results) {
+            if (data.error) {
+                throw new Error(`ML API Error: ${data.message || data.error}`);
+            }
+            return [];
+        }
+
         console.log(`✅ Encontrados ${data.results.length} produtos`);
 
         // Transform the response to a simpler format
